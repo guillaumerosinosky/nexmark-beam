@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group 'be.uclouvain.gepiciad'
+version '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://packages.confluent.io/maven/"
+    }    
+}
+
+ext {
+    beamVersion = '2.46.0'
+}
+
+dependencies {
+    implementation "org.apache.beam:beam-sdks-java-core:${beamVersion}"
+    implementation "org.apache.beam:beam-sdks-java-nexmark:${beamVersion}"
+    implementation "org.apache.beam:beam-runners-direct-java:${beamVersion}"
+    implementation "org.apache.beam:beam-runners-flink-1.14:${beamVersion}"
+    implementation "org.apache.flink:flink-streaming-java_2.12:1.14.2"
+
+    runtimeOnly "org.slf4j:slf4j-simple:1.7.32"
+}
+
+application {
+    mainClassName = 'com.example.CustomNexmarkMain'
+}
+
+shadowJar {
+    configurations = [project.configurations.runtimeClasspath]
+    archiveFileName = 'nexmark-benchmark.jar'
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'com.example.CustomNexmarkMain'
+    }
+    zip64 true
+}
