@@ -15,21 +15,21 @@ repositories {
 }
 
 ext {
-    beamVersion = '2.46.0'
+    beamVersion = '2.50.0'
 }
 
 dependencies {
     implementation "org.apache.beam:beam-sdks-java-core:${beamVersion}"
     implementation "org.apache.beam:beam-sdks-java-nexmark:${beamVersion}"
     implementation "org.apache.beam:beam-runners-direct-java:${beamVersion}"
-    implementation "org.apache.beam:beam-runners-flink-1.14:${beamVersion}"
-    implementation "org.apache.flink:flink-streaming-java_2.12:1.14.2"
+    implementation "org.apache.beam:beam-runners-flink-1.16:${beamVersion}"
+    implementation "org.apache.flink:flink-streaming-java:1.16.2"
 
     runtimeOnly "org.slf4j:slf4j-simple:1.7.32"
 }
 
 application {
-    mainClassName = 'com.example.CustomNexmarkMain'
+    mainClassName = 'be.uclouvain.gepiciad.benchmark.beam.nexmark.CustomNexmarkMain'
 }
 
 shadowJar {
@@ -37,7 +37,7 @@ shadowJar {
     archiveFileName = 'nexmark-benchmark.jar'
     mergeServiceFiles()
     manifest {
-        attributes 'Main-Class': 'com.example.CustomNexmarkMain'
+        attributes 'Main-Class': 'be.uclouvain.gepiciad.benchmark.beam.nexmark.CustomNexmarkMain'
     }
     zip64 true
 }
