@@ -1,0 +1,93 @@
+version: "3.7"
+services:
+  jobmanager:
+    image: flink:${FLINK_VERSION:-1.16}
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+      - "6123:6123"
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
+  taskmanager:
+    image: flink:${FLINK_VERSION:-1.16}
+    privileged: true
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - "jobmanager:jobmanager"
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      - "FLINK_PROPERTIES=taskmanager.numberOfTaskSlots: 4"
+      - BEAM_WORKER_POOL_IN_DOCKER_VM=1
+
+  jobservice:
+    image: apache/beam_flink${FLINK_VERSION:-1.16}_job_server:latest
+    ports:
+      - "8097:8097"
+      - "8098:8098"
+      - "8099:8099"
+    depends_on:
+      - jobmanager
+    command:
+      - "--flink-master=jobmanager:8081"
+      - "--artifacts-dir"
+      - "/opt/artifacts"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  zookeeper-edge1:
+    image: bitnami/zookeeper:latest
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    
+  kafka-edge1:
+    image: bitnami/kafka:3.0.2
+    depends_on:
+      - zookeeper-edge1
+    environment: # https://rmoff.net/2018/08/02/kafka-listeners-explained/
+      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper-edge1:2181
+      #KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://kafka-edge1:9092,BRIDGE://kafka-edge1:9093,OUTSIDE://kafka-edge1:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-edge1:9092,BRIDGE://bridge-edge1:9093,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,BRIDGE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    ports: 
+      - 9094:9094
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "8082:8080"
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=edge1
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-edge1:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper-edge1:2181 
+#  nexmark-beam:
+#    image: grosinosky/nexmark-beam
+#    command: 
+#    - "--runner=FlinkRunner"
+#    - "--flinkMaster=jobmanager:8081"
+#    - "--streaming=true"
+#    #- "--suite=STRESS"
+#    - "--manageResources=false"
+#    - "--monitorJobs=true"
+#    - "--enforceEncodability=true"
+#    - "--enforceImmutability=true"
+#    - "--query=5"
+#    #- "--queryLanguage=sql"
+#    - "--parallelism=1"
+#    - "--numEventGenerators=4"
+#    - "--numEvents=100000000"
+#    - "--firstEventRate=100000"
+#    - "--nextEventRate=100000"    
+#    depends_on:
+#      - jobmanager    

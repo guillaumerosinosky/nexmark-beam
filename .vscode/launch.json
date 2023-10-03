@@ -1,0 +1,40 @@
+{
+    // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+    // Pointez pour afficher la description des attributs existants.
+    // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "CustomNexmarkMain",
+            "request": "launch",
+            "mainClass": "be.uclouvain.gepiciad.benchmark.beam.nexmark.CustomNexmarkMain",
+            "projectName": "nexmark-beam",
+            
+            "env": {
+                "JAVA_OPTS": "-Djava.util.logging.config.file=logging.properties"
+            },
+            "vmArgs": "--add-opens=java.base/java.lang=ALL-UNNAMED",
+            "args": "--runner=FlinkRunner --flinkMaster=localhost:8081 --streaming=true --manageResources=false --monitorJobs=true --enforceEncodability=true --enforceImmutability=true --query=3 --queryLanguage=sql --parallelism=1 --numEventGenerators=4 --numEvents=100000000 --firstEventRate=100000 --nextEventRate=100000 --tempLocation=/tmp"
+        },
+        {
+            "type": "java",
+            "name": "CustomNexmarkMain Kafka",
+            "request": "launch",
+            "mainClass": "be.uclouvain.gepiciad.benchmark.beam.nexmark.CustomNexmarkMain",
+            "projectName": "nexmark-beam",
+            
+            "env": {
+                "JAVA_OPTS": "-Djava.util.logging.config.file=logging.properties"
+            },
+            "vmArgs": "--add-opens=java.base/java.lang=ALL-UNNAMED",
+            "args": "--runner=FlinkRunner --flinkMaster=localhost:8081 --streaming=true --manageResources=false --monitorJobs=true --enforceEncodability=true --enforceImmutability=true --query=3 --queryLanguage=sql --parallelism=1 --numEventGenerators=4 --numEvents=100000000 --firstEventRate=100000 --nextEventRate=100000 --tempLocation=/tmp --bootstrapServers=kafka-edge1:9092 --sinkType=KAFKA --kafkaResultsTopic=test"
+        }
+    ]
+}
