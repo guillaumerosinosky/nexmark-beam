@@ -1,0 +1,24 @@
+version: "3.8"
+services:
+  berserker:
+    image: grosinosky/berserker
+    environment:
+      HOST: kafka-edge1
+      PORT: ${PORT:-9092}
+      THROUGHPUT: ${THROUGHPUT:-1000}
+      TOPIC: ${TOPIC:-berserker_test}
+      SIZE_PAYLOAD: ${SIZE_PAYLOAD:-1000}
+    configs:
+    - source: berserker-kafka
+      target: /app/kafka.yml
+    command: ["java", "-jar", "berserker-runner-0.0.13-SNAPSHOT.jar", "-c", "/app/kafka.yml"]      
+    networks:
+      - nexmark-beam_default
+configs:
+  berserker-kafka:
+    file: ./berserker/kafka.yml
+    template_driver: golang    
+networks:
+  nexmark-beam_default:
+    name: nexmark-beam_default
+    external: true

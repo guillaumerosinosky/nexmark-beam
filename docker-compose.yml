@@ -10,6 +10,8 @@ services:
     command: jobmanager
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
+    networks:
+      - nexmark-beam_default      
 
   taskmanager:
     image: flink:${FLINK_VERSION:-1.16}
@@ -26,6 +28,8 @@ services:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
       - "FLINK_PROPERTIES=taskmanager.numberOfTaskSlots: 4"
       - BEAM_WORKER_POOL_IN_DOCKER_VM=1
+    networks:
+      - nexmark-beam_default      
 
   jobservice:
     image: apache/beam_flink${FLINK_VERSION:-1.16}_job_server:latest
@@ -41,11 +45,15 @@ services:
       - "/opt/artifacts"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - nexmark-beam_default      
 
   zookeeper-edge1:
     image: bitnami/zookeeper:latest
     environment:
       ALLOW_ANONYMOUS_LOGIN: "yes"
+    networks:
+      - nexmark-beam_default      
     
   kafka-edge1:
     image: bitnami/kafka:3.0.2
@@ -61,6 +69,8 @@ services:
       ALLOW_PLAINTEXT_LISTENER: "yes"
     ports: 
       - 9094:9094
+    networks:
+      - nexmark-beam_default      
   kafka-ui:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
@@ -71,6 +81,11 @@ services:
       - KAFKA_CLUSTERS_0_NAME=edge1
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-edge1:9092
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper-edge1:2181 
+    networks:
+      - nexmark-beam_default      
+networks:
+  nexmark-beam_default:
+    name: nexmark-beam_default  
 #  nexmark-beam:
 #    image: grosinosky/nexmark-beam
 #    command: 

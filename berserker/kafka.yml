@@ -1,0 +1,36 @@
+load-generator-configuration:
+  data-source-configuration-name: Ranger
+  rate-generator-configuration-name: default
+  worker-configuration-name: Kafka
+  metrics-reporter-configuration-name: SimpleConsoleReporter
+  thread-count: 10
+  queue-capacity: 100000
+
+data-source-configuration:
+  values:
+    identifier: randomContentString(10, ['A'..'Z', '0'..'9'])
+    now: nowDate()
+    message:
+      id: $identifier
+      label: random(['tomato', 'potato', 'burrito', 'proscuitto', 'gelato', 'amoretto'])
+      quantity: random(1..10)
+      #sharding-value: random(['tomato', 'potato', 'burrito'])
+      #ts: time("yyyy-MM-dd HH:mm:ss.SSS", nowDate())
+      ts: string("{}T{}", time("yyyy-MM-dd", $now), time("HH:mm:ss.SSS", $now))
+    kafkaMessage:
+      key: $identifier
+      value: json($message)
+      topic: berserker_test
+  output: $kafkaMessage
+
+rate-generator-configuration:
+  rates:
+    r: 100
+  output: $r
+
+worker-configuration:
+  async: true
+  topic: berserker
+  producer-configuration:
+    bootstrap.servers: kafka-edge1:9092
+  client-id: berserker
